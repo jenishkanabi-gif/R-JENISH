@@ -1,38 +1,366 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>R JENISH</title>
-<style>
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Arial;background:#f4f6f8;color:#18202a}header{background:#17212b;color:white;padding:18px 16px;position:sticky;top:0;z-index:3}h1{margin:0;font-size:24px}.sub{opacity:.7;font-size:13px}nav{display:flex;gap:6px;overflow:auto;padding:9px;background:white;position:sticky;top:68px;z-index:2}nav button{border:0;border-radius:9px;padding:9px 12px;white-space:nowrap}nav button.active{background:#17212b;color:white}main{max-width:900px;margin:auto;padding:14px}.page{display:none}.page.active{display:block}.card{background:white;border-radius:14px;padding:15px;margin-bottom:12px;box-shadow:0 2px 10px #0001}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{padding:14px;background:#eef3f7;border-radius:12px}.num{font-size:24px;font-weight:700}input,select,textarea{width:100%;padding:10px;border:1px solid #ccd3da;border-radius:8px;margin:5px 0 9px;font-size:15px}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}.primary{background:#17212b;color:white;border:0;padding:10px 14px;border-radius:8px}.danger{background:#e74c3c;color:white;border:0;padding:7px 10px;border-radius:7px}.employee{border:1px solid #e1e5e8;border-radius:11px;padding:11px;margin:8px 0}.att{display:grid;grid-template-columns:1.1fr 1.7fr 1.3fr;gap:7px;align-items:center;border-bottom:1px solid #eee;padding:9px 0}.pills button{border:1px solid #ccd3da;background:white;border-radius:7px;padding:6px;margin:2px}.pills .sel{background:#17212b;color:white}.muted{color:#69747e;font-size:13px}.empty{text-align:center;padding:22px;color:#777}@media(max-width:650px){.att{grid-template-columns:1fr}.grid{grid-template-columns:1fr 1fr}}
-</style></head><body>
-<header><h1>R JENISH</h1><div class="sub">Attendance • Salary • Expenses • Reports</div></header>
-<nav><button class="active" data-p="dashboard">Dashboard</button><button data-p="employees">Employees</button><button data-p="attendance">Attendance</button><button data-p="salary">Salary</button><button data-p="slip">Salary Slip</button><button data-p="expenses">Expenses</button><button data-p="reports">Reports</button><button data-p="settings">Settings</button></nav>
-<main>
-<section id="dashboard" class="page active"><div class="card"><h2>Dashboard</h2><div class="grid"><div class="stat">Employees<div class="num" id="de">0</div></div><div class="stat">Present today<div class="num" id="dp">0</div></div><div class="stat">Expenses<div class="num" id="dx">₹0</div></div><div class="stat">Salary total<div class="num" id="ds">₹0</div></div></div></div><div class="card"><h3>Quick Attendance</h3><div id="quick"></div></div></section>
-<section id="employees" class="page"><div class="card"><h2>Employees</h2><div class="row"><input id="ename" placeholder="Employee name"><input id="ephone" placeholder="Phone"><input id="esalary" type="number" placeholder="Monthly salary"></div><button class="primary" onclick="addEmp()">Add Employee</button></div><div class="card" id="elist"></div></section>
-<section id="attendance" class="page"><div class="card"><h2>Attendance</h2><label>Date<input id="adate" type="date"></label><div id="alist"></div></div></section>
-<section id="salary" class="page"><div class="card"><h2>Salary</h2><div id="slist"></div></div></section>
-<section id="slip" class="page"><div class="card"><h2>Salary Slip</h2><select id="semp"></select><input id="smonth" type="month"><button class="primary" onclick="slip()">Generate Slip</button></div><div id="sout"></div></section>
-<section id="expenses" class="page"><div class="card"><h2>Expenses</h2><div class="row"><input id="xdate" type="date"><input id="xcat" placeholder="Category"><input id="xamt" type="number" placeholder="Amount"></div><textarea id="xnote" placeholder="Description"></textarea><button class="primary" onclick="addExp()">Add Expense</button></div><div class="card" id="xlist"></div></section>
-<section id="reports" class="page"><div class="card"><h2>Reports</h2><input id="rmonth" type="month"><button class="primary" onclick="report()">Show Report</button><button class="primary" onclick="csv()">Export CSV</button><div id="rout"></div></div></section>
-<section id="settings" class="page"><div class="card"><h2>Shift Settings</h2><p class="muted">Edit shift name and timing yourself.</p><div id="shifts"></div><button class="primary" onclick="newShift()">Add Shift</button></div><div class="card"><h2>Backup</h2><button class="primary" onclick="backup()">Download Backup</button></div></section>
-</main>
-<script>
-const K='RJENISH';let db=JSON.parse(localStorage.getItem(K)||'null')||{e:[],a:{},x:[],sh:[{n:'Morning',s:'06:00',t:'14:00'},{n:'Evening',s:'14:00',t:'22:00'},{n:'Night',s:'22:00',t:'06:00'}]};
-const today=()=>new Date().toISOString().slice(0,10);adate.value=today();xdate.value=today();smonth.value=rmonth.value=today().slice(0,7);
-function save(){localStorage.setItem(K,JSON.stringify(db));render()}function addEmp(){if(!ename.value.trim())return alert('Enter employee name');db.e.push({id:Date.now(),n:ename.value.trim(),p:ephone.value,s:+esalary.value||0});ename.value=ephone.value=esalary.value='';save()}function delE(id){db.e=db.e.filter(e=>e.id!=id);save()}
-function setA(id,v){let d=adate.value;db.a[d]??={};db.a[d][id]??={};db.a[d][id].v=v;save()}function note(id,v){let d=adate.value;db.a[d]??={};db.a[d][id]??={};db.a[d][id].note=v;localStorage.setItem(K,JSON.stringify(db))}
-function sh(id,v){let d=adate.value;db.a[d]??={};db.a[d][id]??={};db.a[d][id].sh=v;localStorage.setItem(K,JSON.stringify(db))}
-function addExp(){if(!+xamt.value)return alert('Enter amount');db.x.push({d:xdate.value,c:xcat.value||'Other',a:+xamt.value,n:xnote.value});xcat.value=xamt.value=xnote.value='';save()}
-function units(m,id){let n=0,r=[];for(let d in db.a)if(d.startsWith(m)){let z=db.a[d][id];if(z){let u={P:1,'P+P':2,'P+P+P':3,HD:.5}[z.v]||0;n+=u;r.push({d,...z})}}return{n,r}}
-function render(){de.textContent=db.e.length;let q=db.a[today()]||{};dp.textContent=Object.values(q).filter(z=>['P','P+P','P+P+P','HD'].includes(z.v)).length;dx.textContent='₹'+db.x.reduce((a,z)=>a+z.a,0).toLocaleString();ds.textContent='₹'+db.e.reduce((a,e)=>a+e.s,0).toLocaleString();
-elist.innerHTML=db.e.map(e=>`<div class="employee"><b>${e.n}</b><div class="muted">${e.p||''} • ₹${e.s.toLocaleString()}</div><button class="danger" onclick="delE(${e.id})">Delete</button></div>`).join('')||'<div class="empty">No employees.</div>';
-let d=adate.value;alist.innerHTML=db.e.map(e=>{let z=(db.a[d]||{})[e.id]||{};return `<div class="att"><div><b>${e.n}</b></div><div class="pills">${['P','P+P','P+P+P','A','L','HD'].map(v=>`<button class="${z.v==v?'sel':''}" onclick="setA(${e.id},'${v}')">${v}</button>`).join('')}</div><div><select onchange="sh(${e.id},this.value)"><option>Shift</option>${db.sh.map(s=>`<option ${z.sh==s.n?'selected':''}>${s.n}</option>`).join('')}</select><input placeholder="Description / Note" value="${z.note||''}" onblur="note(${e.id},this.value)"></div></div>`}).join('')||'<div class="empty">Add employees first.</div>';
-slist.innerHTML=db.e.map(e=>{let u=units(today().slice(0,7),e.id).n;return `<div class="employee"><b>${e.n}</b><br>Duty units: ${u}<br>Estimated payable: ₹${Math.round(e.s/30*u).toLocaleString()}</div>`}).join('')||'<div class="empty">No employees.</div>';
-semp.innerHTML=db.e.map(e=>`<option value="${e.id}">${e.n}</option>`).join('');
-xlist.innerHTML='<h3>Total: ₹'+db.x.reduce((a,z)=>a+z.a,0).toLocaleString()+'</h3>'+db.x.slice().reverse().map((z,i)=>`<div class="employee"><b>${z.d}</b> — ${z.c} — ₹${z.a.toLocaleString()}<div class="muted">${z.n||''}</div></div>`).join('');
-shifts.innerHTML=db.sh.map((s,i)=>`<div class="employee"><div class="row"><input value="${s.n}" onchange="db.sh[${i}].n=this.value;save()"><input type="time" value="${s.s}" onchange="db.sh[${i}].s=this.value;save()"><input type="time" value="${s.t}" onchange="db.sh[${i}].t=this.value;save()"><button class="danger" onclick="db.sh.splice(${i},1);save()">Delete</button></div></div>`).join('');
-quick.innerHTML=db.e.map(e=>`<div class="employee"><b>${e.n}</b> <button class="primary" onclick="setQuick(${e.id},'P')">P</button> <button class="primary" onclick="setQuick(${e.id},'P+P')">P+P</button> <button class="primary" onclick="setQuick(${e.id},'A')">A</button></div>`).join('')||'<div class="empty">Add employees.</div>'}
-function setQuick(id,v){adate.value=today();setA(id,v)}function newShift(){db.sh.push({n:'New Shift',s:'09:00',t:'17:00'});save()}function slip(){let e=db.e.find(x=>x.id==+semp.value);if(!e)return;let u=units(smonth.value,e.id);sout.innerHTML=`<div class="card"><h2>R JENISH — Salary Slip</h2><p><b>Employee:</b> ${e.n}</p><p><b>Month:</b> ${smonth.value}</p><p><b>Duty units:</b> ${u.n}</p><p><b>Monthly salary:</b> ₹${e.s.toLocaleString()}</p><h3>Payable: ₹${Math.round(e.s/30*u.n).toLocaleString()}</h3><button class="primary" onclick="print()">Print / Save PDF</button></div>`}
-function report(){let m=rmonth.value;rout.innerHTML=db.e.map(e=>{let u=units(m,e.id);return `<div class="employee"><b>${e.n}</b> — ${u.n} units — ₹${Math.round(e.s/30*u.n).toLocaleString()}</div>`}).join('')}
-function csv(){let rows=[['Date','Employee','Status','Shift','Description']];for(let d in db.a)for(let id in db.a[d]){let e=db.e.find(x=>x.id==id),z=db.a[d][id];if(e)rows.push([d,e.n,z.v||'',z.sh||'',z.note||''])}let b=new Blob([rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(',')).join('\n')]);let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='R_JENISH_Attendance.csv';a.click()}
-function backup(){let b=new Blob([JSON.stringify(db,null,2)]);let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='R_JENISH_Backup.json';a.click()}
-adate.onchange=render;document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(b.dataset.p).classList.add('active')});render();
-</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jenish Dashboard</title>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-image: url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1000&q=80');
+            background-size: cover;
+            background-position: center;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 430px;
+            height: 100vh;
+            max-height: 880px;
+            border-radius: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .overlay::-webkit-scrollbar {
+            display: none;
+        }
+
+        .header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 800;
+            color: #ffcc00;
+            letter-spacing: 1px;
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ff3b30;
+            color: white;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .profile-banner {
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .greeting {
+            font-size: 14px;
+            color: #ffcc00;
+            font-weight: 600;
+        }
+
+        .name {
+            font-size: 26px;
+            font-weight: bold;
+            margin: 2px 0;
+        }
+
+        .tagline {
+            font-size: 12px;
+            color: #ddd;
+            word-spacing: 2px;
+        }
+
+        .date-box {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 10px 14px;
+            border-radius: 14px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .date-box span {
+            display: block;
+            font-size: 11px;
+            color: #ccc;
+        }
+
+        .date-box b {
+            font-size: 13px;
+        }
+
+        .menu-grid {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .menu-card {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .menu-card:hover {
+            background: rgba(255, 255, 255, 0.22);
+            transform: translateY(-3px);
+        }
+
+        .menu-card i {
+            font-size: 28px;
+            margin-bottom: 12px;
+            padding: 12px;
+            border-radius: 14px;
+        }
+
+        .c-green { background: rgba(40, 167, 69, 0.3); color: #2ecc71; }
+        .c-blue { background: rgba(0, 123, 255, 0.3); color: #3498db; }
+        .c-purple { background: rgba(111, 66, 193, 0.3); color: #9b59b6; }
+        .c-orange { background: rgba(253, 126, 20, 0.3); color: #f39c12; }
+        .c-red { background: rgba(220, 53, 69, 0.3); color: #e74c3c; }
+        .c-teal { background: rgba(32, 201, 151, 0.3); color: #1abc9c; }
+        .c-indigo { background: rgba(102, 16, 242, 0.3); color: #8e44ad; }
+        .c-skyblue { background: rgba(13, 202, 240, 0.3); color: #00d2d3; }
+
+        .menu-card h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .menu-card p {
+            font-size: 11px;
+            color: #ccc;
+        }
+
+        .wide-card {
+            margin: 0 20px 20px 20px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 15px 20px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .wide-card-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .wide-card-left i {
+            font-size: 24px;
+            background: rgba(111, 66, 193, 0.4);
+            color: #d1b3ff;
+            padding: 12px;
+            border-radius: 14px;
+        }
+
+        .wide-card h4 {
+            font-size: 15px;
+            margin-bottom: 3px;
+        }
+
+        .wide-card p {
+            font-size: 11px;
+            color: #ccc;
+        }
+
+        .bottom-nav {
+            margin-top: auto;
+            background: rgba(20, 20, 20, 0.85);
+            backdrop-filter: blur(15px);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item {
+            text-align: center;
+            color: #888;
+            text-decoration: none;
+            font-size: 11px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .nav-item i {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        .nav-item.active, .nav-item:hover {
+            color: #3498db;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay">
+        <div class="header">
+            <div class="logo-area">
+                <div class="logo-text"><i class="fa-solid fa-r"></i> JENISH</div>
+            </div>
+            <div class="header-icons">
+                <button class="icon-btn">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="badge">3</span>
+                </button>
+                <button class="icon-btn">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="profile-banner">
+            <div>
+                <div class="greeting">Good Morning ☀️</div>
+                <div class="name">R Jenish</div>
+                <div class="tagline">Work Hard &nbsp;|&nbsp; Stay Positive &nbsp;|&nbsp; Grow Together</div>
+            </div>
+            <div class="date-box">
+                <span>Today</span>
+                <b>15 Sep 2026</b>
+            </div>
+        </div>
+
+        <div class="menu-grid">
+            <div class="menu-card">
+                <i class="fa-solid fa-calendar-days c-green"></i>
+                <h3>Attendance</h3>
+                <p>Mark / View</p>
+            </div>
+            <div class="menu-card">
+                <i class="fa-solid fa-users c-blue"></i>
+                <h3>Employees</h3>
+                <p>Manage Staff</p>
+            </div>
+            <div class="menu-card">
+                <i class="fa-solid fa-indian-rupee-sign c-purple"></i>
+                <h3>Salary</h3>
+                <p>Calculate / View</p>
+            </div>
+            <div class="menu-card">
+                <i class="fa-solid fa-file-lines c-orange"></i>
+                <h3>Salary Slip</h3>
+                <p>Generate / Share</p>
+            </div>
+            <div class="menu-card">
+                <i class="fa-solid fa-wallet c-red"></i>
+                <h3>Expenses</h3>
+                <p>Add / View</p>
+            </div>
+            <div class="menu-card">
+                <i class="fa-solid fa-chart-pie c-teal"></i>
+                <h3>Reports</h3>
+                <p>View / Export</p>
+            </div>
+            <div class="menu-card">
+                <i class="fa-solid fa-clock c-indigo"></i>
+                <h3>Overtime</h3>
+                <p>Track Hours</p>
+            </div>
+            <div class="menu-card">
+                <i class="fa-solid fa-cloud-arrow-up c-skyblue"></i>
+                <h3>Backup</h3>
+                <p>Save Data</p>
+            </div>
+        </div>
+
+        <div class="wide-card">
+            <div class="wide-card-left">
+                <i class="fa-solid fa-chart-column"></i>
+                <div>
+                    <h4>Reports & Statement</h4>
+                    <p>Date-wise • Employee-wise • PDF / Excel</p>
+                </div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color: #aaa;"></i>
+        </div>
+
+        <div class="bottom-nav">
+            <a href="#" class="nav-item active">
+                <i class="fa-solid fa-house"></i> Home
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fa-solid fa-calendar-check"></i> Attendance
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fa-solid fa-user-group"></i> Employees
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fa-solid fa-wallet"></i> Salary
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fa-solid fa-ellipsis"></i> More
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>
