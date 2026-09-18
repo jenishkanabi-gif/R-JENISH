@@ -1,0 +1,1 @@
+R JENISH Attendance Manager prototype. Open index.html in a browser. Data is stored locally in the browser. Includes date-wise attendance, P/P+P/P+P+P/A/L/HD, custom shifts, description, salary, salary slip, expenses, reports, CSV and backup.
